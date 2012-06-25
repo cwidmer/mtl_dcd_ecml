@@ -40,50 +40,50 @@ def compare_solvers(num_runs, data_name):
     num_xt = np.zeros(num_runs)
     train_time = np.zeros((2, num_runs))
 
-    num_runs = 1
-
     true_obj = None
     plot = False
 
-    #TODO: loop over data sets
-    for i in xrange(num_runs):
 
-        data, task_sim = get_data(data_name)
-        #fig = pylab.figure()
+    data, task_sim = get_data(data_name)
+    #fig = pylab.figure()
 
-        print "computing true objective"
-        # determine true objective
-        objectives, train_times = dcd.train_mtl_svm(data, task_sim, "dcd_shogun", 1e-8, 0.0)
-        true_obj = objectives[-1]
+    print "computing true objective"
+    # determine true objective
+    solver = dcd.train_mtl_svm(data, task_sim, "dcd_shogun", 1e-9)
+    true_obj = solver.final_primal_obj
 
-        print "true objective computed"
+    print "true objective computed:", true_obj
 
 
-        for s_idx, solver in enumerate(solvers):
+    for s_idx, solver in enumerate(solvers):
 
-            # new implementation
-            if "dcd" in solver:
-                eps = 1e-8
-            else:
-                eps = 1e-8
-            objectives, train_times = dcd.train_mtl_svm(data, task_sim, solver, eps, true_obj)
+        # new implementation
+        if "dcd" in solver:
+            eps = 1e-8
+        else:
+            eps = 1e-8
 
-            rd = [np.abs(np.abs(true_obj) - np.abs(obj)) for obj in objectives]
-            tt = np.array(train_times)+1
+        objectives, train_times = dcd.train_mtl_svm(data, task_sim, solver, eps)
+        #objectives, train_times = dcd.train_mtl_svm(data, task_sim, solver, eps, true_obj)
 
-            # save results
-            fn = "results/result_" + data_name + "_" + solver + ".pickle" 
-            helper.save(fn, {"obj": objectives, "fun_diff": rd, "time": train_times, "true_obj": true_obj})
+        rd = [np.abs(np.abs(true_obj) - np.abs(obj)) for obj in objectives]
+        tt = np.array(train_times)+1
 
-            # plot stuff
-            #pylab.semilogy(num_xt, train_time[0], "o", label=solvers[0])
-            if plot:
-                pylab.plot(tt, rd, "-o", label=solver.replace("_shogun", ""))
-                pylab.yscale("log")
-                pylab.xscale("log")
-                pylab.xlabel("time in ms")
-                pylab.ylabel("relative function difference")
-                pylab.grid(True)
+        # save results
+        fn = "results/result_" + data_name + "_" + solver + ".pickle" 
+        helper.save(fn, {"obj": objectives, "fun_diff": rd, "time": train_times, "true_obj": true_obj})
+
+        # plot stuff
+        #pylab.semilogy(num_xt, train_time[0], "o", label=solvers[0])
+        if plot:
+            import pylab
+            pylab.plot(tt, rd, "-o", label=solver.replace("_shogun", ""))
+            pylab.yscale("log")
+            pylab.xscale("log")
+            pylab.xlabel("time in ms")
+            pylab.ylabel("relative function difference")
+            pylab.grid(True)
+
 
     # plot training time
     #pylab.semilogy(num_xt, train_time[1], "o", label=solvers[1])

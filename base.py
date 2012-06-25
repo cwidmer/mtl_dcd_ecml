@@ -15,7 +15,11 @@ Created on 09.12.2011
 Provides implementations of primal and dual objetives and useful
 helpers (e.g. turning adjacency matrix intro graph laplacian).
 
+For details, please see our paper:
+"Efficient Training of Graph-Regularized Multitask SVMs"
+
 """
+#TODO insert URL for paper (bitly)
 
 import numpy as np
 
@@ -30,15 +34,24 @@ class BaseSolver(object):
         set up return variables
         """
 
-        # how many interations for recording obj/time
-        self.record_interval = 0
+        # Track progress inside solver.
+        # For this you'll need the ECML2012 branch of SHOGUN,
+        # which contains special timing code to keep track of solver progess:
+        # https://github.com/cwidmer/shogun/tree/ecml2012
 
+        # NOTE: if working with vanilla shogun, please set record_variables=False
+        #self.record_variables = False
+        self.record_variables = True
+        self.record_interval = 0
         self.dual_objectives = []
         self.primal_objectives = []
+        self.train_times = []
 
         # depending on which solver used
-        self.dual_obj = 0
-        self.primal_obj = 0
+        self.final_dual_obj = 0
+        self.final_primal_obj = 0
+        self.final_train_time = 0
+
         self.obj = 0
 
         # primal/dual variables
@@ -48,13 +61,13 @@ class BaseSolver(object):
 
 
 
-
 def compute_graph_laplacian(weight_matrix):
     """
     given the weight matrix of a graph,
     compute its graph laplacian
-    """
 
+    See Equation (4) and text after that.
+    """
 
     # make sure we have a square matrix
     assert weight_matrix.shape[0] == weight_matrix.shape[1]
@@ -64,7 +77,6 @@ def compute_graph_laplacian(weight_matrix):
     # D carries degree, i.e. weight of all connections
     for i in xrange(D.shape[0]):
         D[i,i] = sum(weight_matrix[i,:])
-
 
     # compute graph laplacian
     L = D - weight_matrix
@@ -80,7 +92,8 @@ def get_dual_Q(L, normalize=False):
     # matrix to be used in solver
     M = np.linalg.inv(np.eye(L.shape[0]) + L)
 
-    # propsed in Graphical MTL
+    # optional normalization (off by default)
+    # see: http://web.engr.oregonstate.edu/~sheldon/papers/graphical-manuscript.pdf
     if normalize:
         diag = 1/np.sqrt(np.diag(M))
         M = diag * M * diag
@@ -91,6 +104,8 @@ def get_dual_Q(L, normalize=False):
 def alphas_to_w(alphas, xt, lt, task_indicator, M):
     """
     convert alphas to w
+
+    See Equation (13) and derivation above.
     """
 
     num_tasks = M.shape[0]
@@ -112,10 +127,10 @@ def v_to_w(V, xt, lt, task_indicator, M):
     v_s are spanned only by examples from particular task s,
     whereas w_s are interdependent.
     """
+    #TODO reference Equation above (13)
 
     num_tasks = M.shape[0]
     num_dim = len(xt[0])
-    num_xt = len(xt)
 
     W = np.zeros((num_tasks, num_dim))
     for t in xrange(num_tasks):
@@ -128,8 +143,9 @@ def v_to_w(V, xt, lt, task_indicator, M):
 def compute_dual_objective(alphas, xt, lt, task_indicator, M):
     """
     compute dual objective of MTL formulation
-    """
 
+    See Equation (12).
+    """
 
     num_xt = len(xt)
 
@@ -151,6 +167,8 @@ def compute_dual_objective(alphas, xt, lt, task_indicator, M):
 def compute_primal_objective(param, C, all_xt, all_lt, task_indicator, L):
     """
     compute primal objective of MTL formulation
+
+    See Equation (8).
     """
 
     num_param = param.shape[0]

@@ -43,15 +43,16 @@ class DcdSolverShogun(BaseSolver):
     """
 
 
-    def __init__(self):
+    def __init__(self, eps=1e-5):
         """
 
         """
 
         super(DcdSolverShogun,self).__init__()
+        self.eps = eps
+
         self.target_obj = 0.0
-        self.record_variables = True
-        self.eps = 0.0001
+        self.sanity_check = False
 
 
     def solve(self, C, all_xt, all_lt, task_indicator, M, L):
@@ -74,7 +75,6 @@ class DcdSolverShogun(BaseSolver):
         assert M.shape == L.shape
         assert num_tasks == len(set(tt))
 
-        # set up shogun objects
         # set up shogun objects
         if type(xt[0]) == str or type(xt[0]) == numpy.string_:
             feat = create_hashed_features_wdk(xt, 8)
@@ -107,57 +107,60 @@ class DcdSolverShogun(BaseSolver):
 
         # how often do we like to compute objective etc
         svm.set_record_interval(10)
-        #svm.set_target_objective(target_obj)
         svm.set_max_iterations(10000000)
 
         # start training
         start_time = time.time()
         svm.train(feat)
-        train_time = time.time() - start_time
-        print "training time:", train_time, "seconds"
 
 
-        primal_objectives = svm.get_primal_objectives()
-        dual_objectives = svm.get_dual_objectives()
+        if self.record_variables:
 
-        print primal_objectives
-        print dual_objectives
+            self.final_train_time = time.time() - start_time
+            print "total training time:", self.final_train_time, "seconds"
 
-        #print "computing objectives one last time"
-        self.primal_obj = svm.compute_dual_obj()
-        self.dual_obj = svm.compute_primal_obj()
+            self.primal_objectives = svm.get_primal_objectives()
+            self.dual_objectives = svm.get_dual_objectives()
+            self.train_times = svm.get_training_times()
 
-        print "obj primal", self.primal_obj
-        print "obj dual", self.dual_obj
-        print "actual duality gap:", self.primal_obj - self.dual_obj
+            print "computing objectives one last time"
+            self.final_primal_obj = svm.compute_dual_obj()
+            self.final_dual_obj = svm.compute_primal_obj()
 
-        #print "V", svm.get_V()
-        self.V = svm.get_V()
-        self.W = svm.get_W()
+            print "obj primal", self.final_primal_obj
+            print "obj dual", self.final_dual_obj
+            print "actual duality gap:", self.final_primal_obj - self.final_dual_obj
 
-        #rd = [obj - svm.get_primal_objectives()[-1] for obj in svm.get_primal_objectives()]
-        #train_times = svm.get_training_times()
+            #print "V", svm.get_V()
+            self.V = svm.get_V()
+            self.W = svm.get_W()
+            self.alphas = svm.get_alphas()
 
-        # get model parameters
-        #V = svm.get_W().T
-
-        #alphas = svm.get_alphas()
-        #dual_obj_python = compute_dual_objective(alphas, xt, lt, task_indicator, M)
-        #print "dual obj python", dual_obj_python
-        #print "dual obj C++", dual_obj
+            # get model parameters
+            #V = svm.get_W().T
 
 
-        #print alphas
-        #W = alphas_to_w(alphas, xt, lt, task_indicator, M)
+        if self.sanity_check:
+            print "comparing to python implementation"
 
-        #print W
+            #dual_obj_python = compute_dual_objective(alphas, xt, lt, task_indicator, M)
+            #print "dual obj python", dual_obj_python
+            #print "dual obj C++", dual_obj
 
-        #primal_obj = compute_primal_objective(W.reshape(W.shape[0] * W.shape[1]), C, xt, lt, task_indicator, L)
-        #print "python primal", primal_obj
 
-        # compare dual obj
+            #print alphas
+            #W = alphas_to_w(alphas, xt, lt, task_indicator, M)
 
-        #return objectives#, train_times
+            #print W
+
+            #primal_obj = compute_primal_objective(W.reshape(W.shape[0] * W.shape[1]), C, xt, lt, task_indicator, L)
+            #print "python primal", primal_obj
+
+            # compare dual obj
+
+            #return objectives#, train_times
+
+
         return True
 
 

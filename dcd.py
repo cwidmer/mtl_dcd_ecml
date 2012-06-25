@@ -17,7 +17,6 @@ top-level module to easily switch between solvers
 
 from __future__ import division
 import numpy as np
-import copy
 
 #import pylab
 #from matplotlib.lines import Line2D
@@ -40,7 +39,7 @@ from solver_shogun import DcdSolverShogun, MTKSolverShogun
 
 
 
-def train_mtl_svm(data, task_sim, solver_name):
+def train_mtl_svm(data, task_sim, solver_name, epsilon):
     """
 
     assume data is dict task_name to dict {"xt": xt, "lt": lt} 
@@ -115,12 +114,12 @@ def train_mtl_svm(data, task_sim, solver_name):
         solver.solve(C, all_xt, all_lt, task_indicator, M, L)
 
     if solver_name == "dcd_shogun":
-        solver = DcdSolverShogun()
-        solver.solve(C, all_xt, all_lt, task_indicator, copy.copy(M), copy.copy(L))
+        solver = DcdSolverShogun(epsilon)
+        solver.solve(C, all_xt, all_lt, task_indicator, M, L)
 
     if solver_name == "mtk_shogun":
-        solver = MTKSolverShogun()
-        solver.solve(C, all_xt, all_lt, task_indicator, copy.copy(M), copy.copy(L))
+        solver = MTKSolverShogun(epsilon)
+        solver.solve(C, all_xt, all_lt, task_indicator, M, L)
 
 
     return solver
