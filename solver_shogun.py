@@ -107,6 +107,7 @@ class DcdSolverShogun(BaseSolver):
 
         # how often do we like to compute objective etc
         svm.set_record_interval(10)
+        svm.set_min_interval(15)
         svm.set_max_iterations(10000000)
 
         # start training
@@ -171,7 +172,7 @@ class MTKSolverShogun(BaseSolver):
     """
 
 
-    def __init__(self):
+    def __init__(self, eps=1e-5):
         """
 
         """
@@ -179,7 +180,7 @@ class MTKSolverShogun(BaseSolver):
         super(MTKSolverShogun,self).__init__()
         self.target_obj = 0.0
         self.record_variables = True
-        self.eps = 0.0001
+        self.eps = eps
 
 
     def solve(self, C, all_xt, all_lt, task_indicator, M, L):

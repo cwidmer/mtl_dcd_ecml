@@ -1,3 +1,19 @@
+#!/usr/bin/env python2.6
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# Written (W) 2011-2012 Christian Widmer
+# Copyright (C) 2011-2012 Max-Planck-Society
+
+"""
+Created on 09.12.2011
+@author: Christian Widmer
+@summary: Module for loading/parsing data sets for ECML2012 paper
+
+"""
+
 import os
 import random
 from collections import defaultdict
@@ -111,6 +127,7 @@ def generate_training_data(num_points, offset_x, offset_y, seed=None, ax=None):
 def load_cancer_data():
 
     # set data path
+    #TODO: make path relative and upload to FTP
     dat_path = "/fml/ag-raetsch/home/cwidmer/Documents/phd/projects/personalized_genomics/data/resistance_gene_based/"
 
     #tasks = ["all"] #, "E-GEOD_22093"]
@@ -360,7 +377,7 @@ def get_data(name):
 
         # pick random values
         off_diag = 0.5
-        num_data = 100
+        num_data = 3000
         shift = random.uniform(0.0, 2.0)
 
         # define task similarity matrix

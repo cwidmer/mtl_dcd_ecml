@@ -49,7 +49,8 @@ def compare_solvers(num_runs, data_name):
 
     print "computing true objective"
     # determine true objective
-    solver = dcd.train_mtl_svm(data, task_sim, "dcd_shogun", 1e-9)
+    #solver = dcd.train_mtl_svm(data, task_sim, "dcd_shogun", 1e-9)
+    solver = dcd.train_mtl_svm(data, task_sim, "mtk_shogun", 1e-9)
     true_obj = solver.final_primal_obj
 
     print "true objective computed:", true_obj
@@ -63,15 +64,22 @@ def compare_solvers(num_runs, data_name):
         else:
             eps = 1e-8
 
-        objectives, train_times = dcd.train_mtl_svm(data, task_sim, solver, eps)
-        #objectives, train_times = dcd.train_mtl_svm(data, task_sim, solver, eps, true_obj)
+        solver = dcd.train_mtl_svm(data, task_sim, solver, eps)
 
-        rd = [np.abs(np.abs(true_obj) - np.abs(obj)) for obj in objectives]
-        tt = np.array(train_times)+1
+        rd = [np.abs(np.abs(true_obj) - np.abs(obj)) for obj in solver.dual_objectives]
+        tt = np.array(solver.train_times)+1
 
         # save results
+        dat = {}
+        dat["dual_obj"] = solver.dual_objectives
+        dat["primal_obj"] = solver.primal_objectives
+        dat["fun_diff"] = rd
+        dat["time"] = solver.train_times
+        dat["true_obj"] = true_obj
+        dat["solver_obj"] = solver
+
         fn = "results/result_" + data_name + "_" + solver + ".pickle" 
-        helper.save(fn, {"obj": objectives, "fun_diff": rd, "time": train_times, "true_obj": true_obj})
+        helper.save(fn, dat)
 
         # plot stuff
         #pylab.semilogy(num_xt, train_time[0], "o", label=solvers[0])
