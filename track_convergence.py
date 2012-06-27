@@ -14,8 +14,13 @@ import dcd
 from data import get_data
 import helper
 
+import random
+random.seed = 42
 
-def compare_solvers(num_runs, data_name):
+
+
+
+def compare_solvers(data_name, min_interval):
     """
     call different solvers, compare objectives
 
@@ -34,40 +39,44 @@ def compare_solvers(num_runs, data_name):
     #solvers = ["mtk_shogun"]
     #solvers = ["dcd_shogun"]
 
-    obj = {}
 
-    # keep track of training time
-    num_xt = np.zeros(num_runs)
-    train_time = np.zeros((2, num_runs))
-
-    true_obj = None
-    plot = False
-
+    plot = True
 
     data, task_sim = get_data(data_name)
-    #fig = pylab.figure()
+
+    # set up plot
+    if plot:
+        import pylab
+        fig = pylab.figure()
+
 
     print "computing true objective"
     # determine true objective
-    #solver = dcd.train_mtl_svm(data, task_sim, "dcd_shogun", 1e-9)
-    solver = dcd.train_mtl_svm(data, task_sim, "mtk_shogun", 1e-9)
-    true_obj = solver.final_primal_obj
+    record_interval = 0
+    solver = dcd.train_mtl_svm(data, task_sim, "dcd_shogun", 1e-10, record_interval, min_interval)
+    #solver = dcd.train_mtl_svm(data, task_sim, "mtk_shogun", 1e-9)
+    true_obj = -solver.final_dual_obj
+    #true_obj = -solver.dual_objectives[-1] #solver.final_dual_obj
 
     print "true objective computed:", true_obj
 
 
-    for s_idx, solver in enumerate(solvers):
+    for s_idx, solver_name in enumerate(solvers):
+
+        print "processing solver", solver_name
 
         # new implementation
-        if "dcd" in solver:
-            eps = 1e-8
+        if "dcd" in solver_name:
+            eps = 1e-6
         else:
-            eps = 1e-8
+            eps = 1e-6
 
-        solver = dcd.train_mtl_svm(data, task_sim, solver, eps)
+        # 
+        solver = dcd.train_mtl_svm(data, task_sim, solver_name, eps, 100, min_interval)
 
+        #TODO is this working correctly????
         rd = [np.abs(np.abs(true_obj) - np.abs(obj)) for obj in solver.dual_objectives]
-        tt = np.array(solver.train_times)+1
+        tt = np.array(solver.train_times, dtype=np.float64)/1000.0 + 1.0
 
         # save results
         dat = {}
@@ -78,18 +87,17 @@ def compare_solvers(num_runs, data_name):
         dat["true_obj"] = true_obj
         dat["solver_obj"] = solver
 
-        fn = "results/result_" + data_name + "_" + solver + ".pickle" 
+        fn = "results/result_newkids_" + data_name + "_" + solver_name + ".pickle" 
         helper.save(fn, dat)
 
         # plot stuff
         #pylab.semilogy(num_xt, train_time[0], "o", label=solvers[0])
         if plot:
-            import pylab
-            pylab.plot(tt, rd, "-o", label=solver.replace("_shogun", ""))
+            pylab.plot(tt, rd, "-o", label=solver_name.replace("_shogun", ""))
             pylab.yscale("log")
             pylab.xscale("log")
-            pylab.xlabel("time in ms")
-            pylab.ylabel("relative function difference")
+            pylab.xlabel("time (s)")
+            pylab.ylabel("relative function difference") #TODO relative!
             pylab.grid(True)
 
 
@@ -97,7 +105,8 @@ def compare_solvers(num_runs, data_name):
     #pylab.semilogy(num_xt, train_time[1], "o", label=solvers[1])
     if plot:
         pylab.legend(loc="best")
-        fig.savefig("cancer.pdf")
+        fig_name = "newkids_" + data_name + ".pdf"
+        fig.savefig(fig_name)
         #pylab.show()
 
 
@@ -106,11 +115,13 @@ def main():
     runs experiment in different settings
     """
 
+    #data = ["cancer", "toy", "landmine", "mnist"]
+
     #compare_solvers(500, "splicing")
-    #compare_solvers(500, "cancer")
-    #compare_solvers(500, "landmine")
-    #compare_solvers(500, "mnist")
-    compare_solvers(500, "toy")
+    #compare_solvers("cancer", 10000)
+    #compare_solvers("landmine", 10000)
+    #compare_solvers("mnist", 10000)
+    compare_solvers("toy", 50000)
 
 
 if __name__ == '__main__':

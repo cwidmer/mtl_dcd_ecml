@@ -377,7 +377,7 @@ def get_data(name):
 
         # pick random values
         off_diag = 0.5
-        num_data = 3000
+        num_data = 50000
         shift = random.uniform(0.0, 2.0)
 
         # define task similarity matrix

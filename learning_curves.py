@@ -40,7 +40,6 @@ def learning_curve(data_name, solvers):
     #fractions = [float(c) for c in np.exp(np.linspace(np.log(0.01), np.log(1.0), num_runs))]
     fractions = [float(c) for c in np.exp(np.linspace(np.log(0.1), np.log(1.0), num_runs))]
 
-    fractions = [0.2, 0.6]
 
     # keep track of training time
     num_xt = np.zeros(num_runs)
@@ -70,23 +69,23 @@ def learning_curve(data_name, solvers):
 
         for s_idx, solver in enumerate(solvers):
 
-            eps = 1e-2
+            eps = 1e-3
             start_time = time.time()
-            dcd.train_mtl_svm(data_subset, task_sim, solver, eps, 0)
+            dcd.train_mtl_svm(data_subset, task_sim, solver, eps, 0, 0)
             ttime = time.time() - start_time
             print "training time:", ttime, "seconds"
 
             train_times[s_idx,run_id] = ttime
 
             # write progress to file
-            fn = "results/learning_curve_pg_" + data_name + "_" + solver + "_" + str(fractions) +".txt"
+            fn = "results/learning_curve_newkids_" + data_name + "_" + solver + "_" + str(fractions) +".txt"
             txt_file = file(fn, "a")
             txt_file.write("num_xt:\t%i\ttime:\t%i\n" % (num_xt[run_id], ttime))
             txt_file.close()
             
 
     # save results
-    fn = "results/learning_curve_split_" + data_name + ".pickle" 
+    fn = "results/learning_curve_newkids_" + data_name + ".pickle" 
     helper.save(fn, {"num_xt": num_xt, "time": train_times})
 
 
@@ -96,11 +95,12 @@ def main():
     runs experiment in different settings
     """
 
-    #solvers = ["dcd_shogun", "mtk_shogun"]
-    solvers = ["mtk_shogun"]
+    solvers = ["dcd_shogun", "mtk_shogun"]
+    #solvers = ["mtk_shogun"]
 
     #learning_curve("landmine", solvers)
-    learning_curve("splicing", solvers)
+    #learning_curve("splicing", solvers)
+    learning_curve("toy", solvers)
 
 
 if __name__ == '__main__':

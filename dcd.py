@@ -39,7 +39,7 @@ from solver_shogun import DcdSolverShogun, MTKSolverShogun
 
 
 
-def train_mtl_svm(data, task_sim, solver_name, epsilon):
+def train_mtl_svm(data, task_sim, solver_name, epsilon, record_interval, min_interval):
     """
 
     assume data is dict task_name to dict {"xt": xt, "lt": lt} 
@@ -114,11 +114,11 @@ def train_mtl_svm(data, task_sim, solver_name, epsilon):
         solver.solve(C, all_xt, all_lt, task_indicator, M, L)
 
     if solver_name == "dcd_shogun":
-        solver = DcdSolverShogun(epsilon)
+        solver = DcdSolverShogun(epsilon, record_interval, min_interval)
         solver.solve(C, all_xt, all_lt, task_indicator, M, L)
 
     if solver_name == "mtk_shogun":
-        solver = MTKSolverShogun(epsilon)
+        solver = MTKSolverShogun(epsilon, record_interval, min_interval)
         solver.solve(C, all_xt, all_lt, task_indicator, M, L)
 
 

@@ -43,16 +43,19 @@ class DcdSolverShogun(BaseSolver):
     """
 
 
-    def __init__(self, eps=1e-5):
+    def __init__(self, eps=1e-5, record_interval=0, min_interval=10):
         """
 
         """
 
         super(DcdSolverShogun,self).__init__()
-        self.eps = eps
 
         self.target_obj = 0.0
         self.sanity_check = False
+
+        self.eps = eps
+        self.record_interval = record_interval
+        self.min_interval = min_interval
 
 
     def solve(self, C, all_xt, all_lt, task_indicator, M, L):
@@ -95,6 +98,7 @@ class DcdSolverShogun(BaseSolver):
         svm.set_task_indicator_lhs(tt)
         svm.set_task_indicator_rhs(tt)
         svm.set_num_tasks(num_tasks)
+        svm.set_use_cache(False)
 
         #print "setting sparse matrix!"
         tsm_sp = csc_matrix(tsm)
@@ -106,8 +110,8 @@ class DcdSolverShogun(BaseSolver):
         svm.set_labels(lab)
 
         # how often do we like to compute objective etc
-        svm.set_record_interval(10)
-        svm.set_min_interval(15)
+        svm.set_record_interval(self.record_interval)
+        svm.set_min_interval(self.min_interval)
         svm.set_max_iterations(10000000)
 
         # start training
@@ -125,8 +129,8 @@ class DcdSolverShogun(BaseSolver):
             self.train_times = svm.get_training_times()
 
             print "computing objectives one last time"
-            self.final_primal_obj = svm.compute_dual_obj()
-            self.final_dual_obj = svm.compute_primal_obj()
+            self.final_primal_obj = svm.compute_primal_obj()
+            self.final_dual_obj = svm.compute_dual_obj()
 
             print "obj primal", self.final_primal_obj
             print "obj dual", self.final_dual_obj
@@ -172,15 +176,16 @@ class MTKSolverShogun(BaseSolver):
     """
 
 
-    def __init__(self, eps=1e-5):
+    def __init__(self, eps=1e-5, record_interval=0, min_interval=10):
         """
 
         """
 
         super(MTKSolverShogun,self).__init__()
         self.target_obj = 0.0
-        self.record_variables = True
         self.eps = eps
+        self.record_interval = record_interval
+        self.min_interval = min_interval
 
 
     def solve(self, C, all_xt, all_lt, task_indicator, M, L):
@@ -235,18 +240,22 @@ class MTKSolverShogun(BaseSolver):
         svm = SVMLight() #LibSVM()
 
         svm.set_epsilon(self.eps)
+
+        #SET THREADS TO 1
         #print "reducing num threads to one"
+        #segfaults
         #svm.parallel.set_num_threads(1)
         #print "using one thread"
 
         # how often do we like to compute objective etc
-        svm.set_record_interval(1000)
+        svm.set_record_interval(self.record_interval)
+        svm.set_min_interval(self.min_interval)
         #svm.set_target_objective(target_obj)
 
         svm.set_linadd_enabled(False)
         svm.set_batch_computation_enabled(False)
+        #svm.set_shrinking_enabled(False)
         svm.io.set_loglevel(MSG_DEBUG)
-        #SET THREADS TO 1
 
         svm.set_C(C,C)
         svm.set_bias_enabled(False)
@@ -259,32 +268,34 @@ class MTKSolverShogun(BaseSolver):
         # train svm
         svm.train()
 
-        #train_times = svm.get_training_times()
-        #objectives = [-obj for obj in svm.get_dual_objectives()]
-
-        primal_objectives = svm.get_primal_objectives()
-        dual_objectives = svm.get_dual_objectives()
-
-        print primal_objectives
-        print dual_objectives
 
         if self.record_variables:
 
-                # get model parameters
-                sv_idx = svm.get_support_vectors()
-                sparse_alphas = svm.get_alphas()
+            print "recording variables"
 
-                assert len(sv_idx) == len(sparse_alphas)
+            self.dual_objectives = [-obj for obj in svm.get_dual_objectives()]
+            self.train_times = svm.get_training_times()
 
-                # compute dense alpha (remove label)
-                self.alphas = numpy.zeros(len(xt))
-                for id_sparse, id_dense in enumerate(sv_idx):
-                    self.alphas[id_dense] = sparse_alphas[id_sparse] * lt[id_dense]
+            # get model parameters
+            sv_idx = svm.get_support_vectors()
+            sparse_alphas = svm.get_alphas()
 
-                # print alphas
-                W = alphas_to_w(self.alphas, xt, lt, task_indicator, M)
-                self.primal_obj = compute_primal_objective(W.reshape(W.shape[0] * W.shape[1]), C, all_xt, all_lt, task_indicator, L)
-                self.W = W
+            assert len(sv_idx) == len(sparse_alphas)
+
+            # compute dense alpha (remove label)
+            self.alphas = numpy.zeros(len(xt))
+            for id_sparse, id_dense in enumerate(sv_idx):
+                self.alphas[id_dense] = sparse_alphas[id_sparse] * lt[id_dense]
+
+            # print alphas
+            W = alphas_to_w(self.alphas, xt, lt, task_indicator, M)
+            self.W = W
+
+            #
+            self.final_primal_obj = compute_primal_objective(W.reshape(W.shape[0] * W.shape[1]), C, all_xt, all_lt, task_indicator, L)
+
+            print "MTK duality gap:", self.dual_objectives[-1] - self.final_primal_obj
+
 
         return True
 
