@@ -78,7 +78,7 @@ def learning_curve(data_name, solvers):
             train_times[s_idx,run_id] = ttime
 
             # write progress to file
-            fn = "results/learning_curve_newkids_" + data_name + "_" + solver + "_" + str(fractions) +".txt"
+            fn = "results/learning_curve_newkids_" + data_name + "_" + solver + ".txt"
             txt_file = file(fn, "a")
             txt_file.write("num_xt:\t%i\ttime:\t%i\n" % (num_xt[run_id], ttime))
             txt_file.close()
@@ -100,7 +100,9 @@ def main():
 
     #learning_curve("landmine", solvers)
     #learning_curve("splicing", solvers)
-    learning_curve("toy", solvers)
+    #learning_curve("toy", solvers)
+    #learning_curve("cancer", solvers)
+    learning_curve("mnist", solvers)
 
 
 if __name__ == '__main__':

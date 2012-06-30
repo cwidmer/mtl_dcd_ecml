@@ -45,7 +45,7 @@ def plot_results(dcd, mtk, target="fun_diff"):
     pylab.legend(loc=2)
     pylab.grid(True)
 
-
+"""
 def plot_learning_curve(dcd, mtk):
     import pylab
 
@@ -57,7 +57,31 @@ def plot_learning_curve(dcd, mtk):
     pylab.legend()
     pylab.grid(True)
     pylab.show()
+"""
 
+def plot_learning_curve(data_fn):
+
+    import pylab
+
+    d = helper.load(data_fn)
+
+    print d
+
+    n_dcd = [t for i,t in enumerate(d["num_xt"]) if d["time"][0][i] != 0]
+    n_mtk = [t for i,t in enumerate(d["num_xt"]) if d["time"][1][i] != 0]
+
+    t_dcd = [t for t in d["time"][0] if t != 0]
+    t_mtk = [t for t in d["time"][1] if t != 0]
+
+    pylab.plot(n_mtk, t_mtk, "-o", linewidth=0.5, alpha=0.6, label="baseline MTK", color="red")
+    pylab.plot(n_dcd, t_dcd, "-o", linewidth=0.5, alpha=0.6, label="proposed DCD", color="blue")
+    pylab.yscale("log")
+    #pylab.xscale("log")
+    pylab.xlabel("number of training examples")
+    pylab.ylabel("training time (s)")
+    pylab.legend(loc=2)
+    pylab.grid(True)
+    pylab.show()
 
 
 def coshuffle(*args):
@@ -325,7 +349,7 @@ def load_mnist_data():
             else:
                 dat["2-8"]["lt"].append(-1.0)
 
-    """
+
     dat["1-0"]["xt"], dat["1-0"]["lt"] = coshuffle(dat["1-0"]["xt"], dat["1-0"]["lt"])
     dat["1-0"]["xt"] = dat["1-0"]["xt"][0:3000]
     dat["1-0"]["lt"] = dat["1-0"]["lt"][0:3000]
@@ -337,7 +361,6 @@ def load_mnist_data():
     dat["2-8"]["xt"], dat["2-8"]["lt"] = coshuffle(dat["2-8"]["xt"], dat["2-8"]["lt"])
     dat["2-8"]["xt"] = dat["2-8"]["xt"][0:3000]
     dat["2-8"]["lt"] = dat["2-8"]["lt"][0:3000]
-    """
 
     print "1-0", len(dat["1-0"]["lt"])
     print "7-9", len(dat["7-9"]["lt"])
@@ -377,7 +400,7 @@ def get_data(name):
 
         # pick random values
         off_diag = 0.5
-        num_data = 50000
+        num_data = 25000
         shift = random.uniform(0.0, 2.0)
 
         # define task similarity matrix

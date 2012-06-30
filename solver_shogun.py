@@ -88,8 +88,8 @@ class DcdSolverShogun(BaseSolver):
 
         # set up machinery
         svm = LibLinearMTL()
-        svm.set_epsilon(self.eps)
         svm.io.set_loglevel(MSG_DEBUG)
+        svm.set_epsilon(self.eps)
 
         svm.set_C(C,C)
         svm.set_bias_enabled(False)
@@ -231,7 +231,7 @@ class MTKSolverShogun(BaseSolver):
         print "num of unique tasks: ", normalizer.get_num_unique_tasks(task_indicator)
 
         # set up kernel
-        base_kernel.set_cache_size(2000)
+        base_kernel.set_cache_size(4000)
         base_kernel.set_normalizer(normalizer)
         base_kernel.init_normalizer()
 

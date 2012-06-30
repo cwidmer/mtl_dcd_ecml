@@ -40,8 +40,8 @@ class BaseSolver(object):
         # https://github.com/cwidmer/shogun/tree/ecml2012
 
         # NOTE: if working with vanilla shogun, please set record_variables=False
-        self.record_variables = False
-        #self.record_variables = True
+        #self.record_variables = False
+        self.record_variables = True
         self.record_interval = 0
         self.dual_objectives = []
         self.primal_objectives = []

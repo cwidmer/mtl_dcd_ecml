@@ -69,7 +69,7 @@ def coshuffle(*args):
         assert len(arg) == num_elements, "length mismatch"
 
     idx = range(num_elements)
-    random.seed = 42
+    random.seed(42)
     random.shuffle(idx)
 
     new_lists = []

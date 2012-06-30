@@ -139,7 +139,7 @@ def run_mtl_experiment(off_diag, solver):
     task_sim = np.array([[1.0, off_diag],[off_diag, 1.0]])
 
     # fix seed to make experiments comparable
-    seed = 42
+    seed = 666
     num_points = 100
 
     # generate toy data
