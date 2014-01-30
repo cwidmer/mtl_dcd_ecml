@@ -294,7 +294,7 @@ def create_seq_data(org_name, work_dir):
 
 def main():
 
-    base_dir = "/fml/ag-raetsch/home/cwidmer/Documents/phd/projects/multitask/data/translation_start/"
+    base_dir = "data/splice"
     organisms = os.listdir(base_dir)    
         
         

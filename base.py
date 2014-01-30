@@ -18,8 +18,9 @@ helpers (e.g. turning adjacency matrix intro graph laplacian).
 For details, please see our paper:
 "Efficient Training of Graph-Regularized Multitask SVMs"
 
+Available from:
+http://www.cs.bris.ac.uk/~flach/ECMLPKDD2012papers/1125558.pdf
 """
-#TODO insert URL for paper (bitly)
 
 import numpy as np
 

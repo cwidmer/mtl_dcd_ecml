@@ -199,7 +199,7 @@ def create_features(examples, param):
 
     feat = None    
 
-    #TODO: refactor!!!    
+    #TODO: refactor
     if param and param.flags.has_key("svm_type") and param.flags["svm_type"] == "liblineardual":
         # create hashed promoter features
         return create_hashed_promoter_features(examples, param.flags)

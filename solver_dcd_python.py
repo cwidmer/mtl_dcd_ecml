@@ -78,7 +78,6 @@ class DcdSolver(BaseSolver):
 
 
         # compute W from alphas
-        #TODO check if identical
         W = alphas_to_w(alphas, all_xt, all_lt, task_indicator, M)
         W2 = v_to_w(V, all_xt, all_lt, task_indicator, M)
 
@@ -229,7 +228,6 @@ class DcdSolverShrinking(BaseSolver):
                 break
 
         # compute W from alphas
-        #TODO check if identical
         self.W = alphas_to_w(alphas, all_xt, all_lt, task_indicator, M)
         W2 = v_to_w(V, all_xt, all_lt, task_indicator, M)
         self.alphas = alphas

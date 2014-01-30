@@ -1,3 +1,19 @@
+#!/usr/bin/env python2.6
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# Written (W) 2011-2012 Christian Widmer
+# Copyright (C) 2011-2012 Max-Planck-Society
+
+"""
+Created on 09.12.2011
+@author: Christian Widmer
+@summary: Script for computing learning curves
+
+"""
+
 from __future__ import division
 #import matplotlib as mpl
 #mpl.use('Agg')
@@ -37,7 +53,6 @@ def learning_curve(data_name, solvers):
 
     num_runs = 10
     #fractions = np.linspace(0.1, 1.0, num_runs)
-    #fractions = [float(c) for c in np.exp(np.linspace(np.log(0.01), np.log(1.0), num_runs))]
     fractions = [float(c) for c in np.exp(np.linspace(np.log(0.1), np.log(1.0), num_runs))]
 
 
@@ -78,14 +93,14 @@ def learning_curve(data_name, solvers):
             train_times[s_idx,run_id] = ttime
 
             # write progress to file
-            fn = "results/learning_curve_newkids_" + data_name + "_" + solver + ".txt"
+            fn = "results/learning_curve_" + data_name + "_" + solver + ".txt"
             txt_file = file(fn, "a")
             txt_file.write("num_xt:\t%i\ttime:\t%i\n" % (num_xt[run_id], ttime))
             txt_file.close()
             
 
     # save results
-    fn = "results/learning_curve_newkids_" + data_name + ".pickle" 
+    fn = "results/learning_curve_" + data_name + ".pickle" 
     helper.save(fn, {"num_xt": num_xt, "time": train_times})
 
 
@@ -111,7 +126,7 @@ if __name__ == '__main__':
     try:
         main()
     except:
-        type, value, tb = sys.exc_info()
+        etype, value, tb = sys.exc_info()
         traceback.print_exc()
         import ipdb
         ipdb.post_mortem(tb)
